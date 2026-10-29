@@ -19,7 +19,7 @@ def main():
   if a.case and name not in a.case:continue
   ir=out/(name+'.ll');exe=out/(name+('.wasm' if name=='wasm32' else '.elf'))
   rc,log=run([a.clang,*flags,*common,'-S','-emit-llvm',ROOT/'probes/layout.cpp','-o',ir]);(out/(name+'-ir.log')).write_text(log)
-  rec={'case':name,'flags':flags,'status':'ERROR'}
+  rec={'case':name,'flags':flags,'status':'ERROR','emulator':run([execute[0],'--version'])[1].strip()}
   if rc==0:
    values=[int(x) for x in re.findall(r'i64 (-?\d+)',re.search(r'^@audit_facts\s*=.*$',ir.read_text(),re.M).group())]
    assert len(values)==len(NAMES)

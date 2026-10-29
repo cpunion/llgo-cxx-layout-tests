@@ -12,7 +12,7 @@ for source,standards,targets in [('empty.c',['gnu17','c17'],TARGETS),('version_p
    proc=subprocess.run(cmd,text=True,capture_output=True);log=proc.stdout+proc.stderr;(out/(key+'.log')).write_text(log)
    row={'source':source,'target':target,'standard':std,'exit':proc.returncode,'flags':flags,'command':cmd}
    if not proc.returncode:
-    line=re.search(r'^@audit_\w+\s*=.*$',ir.read_text(),re.M).group();row['facts']=[int(x) for x in re.findall(r'i64 (-?\d+)',line)];row['status']='COMPILE_PASS'
+    line=re.search(r'^@audit_\w+\s*=.*$',ir.read_text(),re.M).group();row['facts']=[int(x) for x in re.findall(r'i64 (-?\d+)',line)];row['status']='FAIL' if source=='empty.c' and std=='c17' else 'COMPILE_PASS'
     if a.native and source=='empty.c':
      exe=out/(key+('.exe' if sys.platform=='win32' else '.bin'))
      cmd=[a.clang,'--target='+target,'-x','c',*flags,'-DAUDIT_NATIVE',str(ROOT/'probes'/source),'-o',str(exe)]

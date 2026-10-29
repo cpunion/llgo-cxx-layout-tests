@@ -253,6 +253,10 @@ SSA 本身不解析 LLGo 布局指令，不持有可用于事后重算全部 uns
 
 [proposals/layout_runtime](../proposals/layout_runtime) 在布局草案编译器上验证了 packed、pack(2)、泛型提升字段、native callback、Go closure 的静态大小与泛型结果，以及反射/实际字段地址之间的关系。具体值检查通过；普通 Go 的共同一致性测试也通过。它不证明未支持的 C++ 重叠布局能被 Sizeof 接口凭空恢复。
 
+跨平台补测给出了一个重要限制：[草案/SSA 结果矩阵](../evidence/proposal-matrix.md) 中，七个平台的普通 Go 检查和两种 patched SizesFor 名称的 SSA 常量检查均通过；Windows amd64/arm64/x86、Linux arm64、macOS arm64 的 `layout-runtime` 也通过。但是 Linux amd64 与 macOS amd64 在编译该测试时均于 `LLVMTargetMachineEmitToMemoryBuffer` 中发生 SIGSEGV，Linux 复跑继续失败。测试尚未执行到布局断言，因此这两项记录为 ERROR，而不是 PASS。
+
+这个结果不说明 `go/types` 已折叠的常量错误；它说明该草案的后端仍有可复现的编译阻塞。当前尚未将根因归到 packed、泛型、参数传递或并行构建中的某一项。仓库额外提供 [小型代码生成探针](../experiments/packed_codegen) 与手动诊断工作流，将完整测试的 `-p=1` 编译和四个更小程序分开记录。这里保留失败，不通过更改目标值把它“修成通过”。
+
 自定义 Sizes 对已编码的布局模型有效，无法替代 C++ 对象模型和 ABI 信息源。`types.Sizes` 的三个方法本身也不提供 vtable、虚基类寻址、bit-field 位宽、参数寄存器分类或析构信息。参见 [Go 规范](https://go.dev/ref/spec#Size_and_alignment_guarantees)、[SSA API](https://pkg.go.dev/golang.org/x/tools/go/ssa#Program.CreatePackage)。
 
 ## 五、建议与需要补充的提案

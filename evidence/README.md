@@ -5,6 +5,7 @@
 | 证据 | 内容 |
 |---|---|
 | [原生 C++ 运行表](native-reference.md) | Windows/macOS/Linux 八个目标组合；upstream Clang 18～23 在 Linux 的独立执行 |
+| [草案/SSA 矩阵](proposal-matrix.md) | 七个平台的 patched go/types、泛型布局与编译器崩溃记录 |
 | [LLGo 逐用例矩阵](llgo-matrix.md) | 各原生平台的 PASS/XFAIL/XPASS/ERROR，不能仅以 CI 绿色判断兼容 |
 | [local-reference.zip](local-reference.zip) | 本地 Clang 18～23、Apple Clang 的 420 条 cross 配置；最终 IR、诊断、版本兼容选项实验；C 扩展/严格模式、Cortex-M3/RV32/wasm32 执行、Xtensa 交叉编译 |
 | [ci-reference.zip](ci-reference.zip) | GitHub Actions 原生/版本/目标参考程序的原始结果 |
@@ -15,8 +16,9 @@
 
 执行来源：
 
-- [原生 C++ 和编译器版本矩阵](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40807526001)：首次完整通过的 C++ 运行，8 个 native target 组合与 6 个 compiler version lane。
-- [LLGo 原生兼容探针](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40809763717)：20 个用例；Windows 使用明确的 target-specific cross-generation 路径。
+- [原生 C++ 和编译器版本矩阵](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40812047681)：保存的 C/C++ 与嵌入参考运行，8 个 native target 组合与 6 个 compiler version lane。
+- [LLGo 原生兼容探针](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40812047905)：20 个用例；Windows 使用明确的 target-specific cross-generation 路径。
+- [布局草案与 SSA 运行](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40812590996)：保留两个 SysV amd64 后端崩溃，常量检查独立报告。
 - [原始 Windows 生成器构建失败](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40807924588/job/123231183216)：缺少 `clang.Mangling`，不是内存布局断言失败。
 
 本地嵌入执行使用 QEMU 11.1.1 / Wasmtime 48.0.1；没有 ESP32 实机执行证据。CI 和本地版本可能不同，以各 summary 的完整字符串为准。
