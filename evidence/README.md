@@ -11,16 +11,20 @@
 | [ci-reference.zip](ci-reference.zip) | GitHub Actions 原生/版本/目标参考程序的原始结果 |
 | [llgo.zip](llgo.zip) | 本地与 CI 的实际生成源码、测试日志、逐用例退出码；Linux 生成 Windows-target 绑定的 provenance |
 | [libclang.zip](libclang.zip) | 固定生成器加载不同 libclang：18～20 的缺符号启动失败；21～23 的输出哈希与日志 |
-| [proposal-ssa.zip](proposal-ssa.zip) | padding 草案失败断言、PR #761 的原生对比、gc/自定义/patch 三种 SSA 输出以及运行时泛型一致性测试 |
+| [proposal-ssa.zip](proposal-ssa.zip) | padding 草案失败断言、PR #761 的原生对比、gc/自定义/patch 三种 SSA 输出、运行时泛型一致性以及 main/草案编译崩溃对照 |
 | [archives.json](archives.json) | 每个压缩包的 SHA-256、文件数与字节数 |
 
 执行来源：
 
-- [原生 C++ 和编译器版本矩阵](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40812047681)：保存的 C/C++ 与嵌入参考运行，8 个 native target 组合与 6 个 compiler version lane。
+- [原生 C++ 和编译器版本矩阵](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40815588967)：保存的 C/C++ 与嵌入参考运行，8 个 native target 组合与 6 个 compiler version lane。
 - [LLGo 原生兼容探针](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40812047905)：20 个用例；Windows 使用明确的 target-specific cross-generation 路径。
-- [布局草案与 SSA 运行](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40812590996)：保留两个 SysV amd64 后端崩溃，常量检查独立报告。
+- [布局草案与 SSA 运行](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40812590996)：Linux amd64 复跑仍崩溃；macOS amd64 首次崩溃、复跑通过，全部记录保留。
+- [代码生成隔离实验](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40815304481)：串行运行及普通泛型嵌入字段程序可复现 Linux amd64 崩溃。
+- [main / 布局草案对照](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40816298326)：无布局指令、非泛型示例也复现，排除“patch 新增回归”的归因。
 - [原始 Windows 生成器构建失败](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40807924588/job/123231183216)：缺少 `clang.Mangling`，不是内存布局断言失败。
 
 本地嵌入执行使用 QEMU 11.1.1 / Wasmtime 48.0.1；没有 ESP32 实机执行证据。CI 和本地版本可能不同，以各 summary 的完整字符串为准。
 
 压缩包只包含文本证据，不包括编译出来的可执行文件。源码发生变化后重新运行测试，并执行 `python3 scripts/archive_evidence.py` 更新归档；不要只更新表格中的状态。
+
+同一次 workflow 的复跑可能留下多个同名 artifact。`scripts/download_evidence.py` 按 `created_at` 选择最新项，保存 run/head SHA/artifact ID；不能按 ID 大小或列表顺序推断新旧。

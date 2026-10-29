@@ -5,14 +5,14 @@
     "bytes": 1007176
   },
   "ci-reference.zip": {
-    "sha256": "414026c048f7d524916e9b0d48573c2a72d996c988b20c568be4d373da136d39",
-    "files": 1293,
-    "bytes": 1127866
+    "sha256": "51a14a0c82af7ef1e9201fc310f50f01a41f070f44209ac2bb755d4330732c6c",
+    "files": 1294,
+    "bytes": 1124058
   },
   "llgo.zip": {
-    "sha256": "5559e7be72d0b699846eb669963c69904ac4df76c8f220b7658cb0596182291d",
-    "files": 592,
-    "bytes": 268995
+    "sha256": "8642364bdd3580c040d4072bdc2149f9b48ab9d93fd1086744f0c06a7e25e2b5",
+    "files": 593,
+    "bytes": 267715
   },
   "libclang.zip": {
     "sha256": "d2a5111e8800e65785202928f5844c3209c914f33ab227f1011bce895f45218a",
@@ -20,8 +20,8 @@
     "bytes": 73646
   },
   "proposal-ssa.zip": {
-    "sha256": "217674f3084ac478a6675629205e029cae84137424845d9832e40f1ef06c0081",
-    "files": 76,
-    "bytes": 68081
+    "sha256": "42ced7608dba0959ab0499c5082384d27f41779f7ac6b0e55ae861a7b8143c3b",
+    "files": 144,
+    "bytes": 138604
   }
 }

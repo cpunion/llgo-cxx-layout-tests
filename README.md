@@ -52,7 +52,7 @@ python3 scripts/llgo_cases.py --target x86_64-pc-windows-msvc --bindings results
 go test -v ./proposals/padding ./proposals/layout_runtime
 # 以下需使用 pins.json 中 layout_pr 对应的 LLGo，设置其 LLGO_ROOT：
 AUDIT_CXXFLAGS=-std=c++20 llgo test -v ./proposals/padding       # 预期 C++ 映射断言失败
-llgo test -v ./proposals/layout_runtime                       # 静态/泛型/反射一致性应通过
+llgo test -v ./proposals/layout_runtime                       # 静态/泛型/反射一致性；平台结果见报告，Linux amd64 有编译崩溃
 # PR #761 快照绑定只用于 Itanium 目标：
 AUDIT_CXXFLAGS=-std=c++20 llgo test -v ./proposals/pr761        # 预期失败
 cd experiments/ssa

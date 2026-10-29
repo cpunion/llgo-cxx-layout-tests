@@ -251,11 +251,26 @@ Cortex-M3 在 QEMU `mps2-an385`、RISC-V 32 在 QEMU `virt`、wasm32 在 Wasmtim
 
 SSA 本身不解析 LLGo 布局指令，不持有可用于事后重算全部 unsafe 常量的 Sizes 配置。必须在类型检查前保留注释并登记布局属性，正确设置目标 Sizes，恢复导入类型的布局元数据；不能先用 gc 检查，再期望仅构建 SSA 就自动修正。显式传入其他 Sizes 时也不能假设 patch 会覆盖调用方选择。
 
-[proposals/layout_runtime](../proposals/layout_runtime) 在布局草案编译器上验证了 packed、pack(2)、泛型提升字段、native callback、Go closure 的静态大小与泛型结果，以及反射/实际字段地址之间的关系。具体值检查通过；普通 Go 的共同一致性测试也通过。它不证明未支持的 C++ 重叠布局能被 Sizeof 接口凭空恢复。
+[proposals/layout_runtime](../proposals/layout_runtime) 在布局草案编译器上验证了 packed、pack(2)、泛型提升字段、native callback、Go closure 的静态大小与泛型结果，以及反射/实际字段地址之间的关系。下述成功执行的平台上具体值检查通过；普通 Go 的共同一致性测试也通过。它不证明未支持的 C++ 重叠布局能被 Sizeof 接口凭空恢复。
 
-跨平台补测给出了一个重要限制：[草案/SSA 结果矩阵](../evidence/proposal-matrix.md) 中，七个平台的普通 Go 检查和两种 patched SizesFor 名称的 SSA 常量检查均通过；Windows amd64/arm64/x86、Linux arm64、macOS arm64 的 `layout-runtime` 也通过。但是 Linux amd64 与 macOS amd64 在编译该测试时均于 `LLVMTargetMachineEmitToMemoryBuffer` 中发生 SIGSEGV，Linux 复跑继续失败。测试尚未执行到布局断言，因此这两项记录为 ERROR，而不是 PASS。
+跨平台补测给出了一个重要限制：[草案/SSA 结果矩阵](../evidence/proposal-matrix.md) 中，七个平台的普通 Go 检查和两种 patched SizesFor 名称的 SSA 常量检查均通过（SSA 实验显式使用 amd64 Sizes；运行时测试采用实际目标）；Windows amd64/arm64/x86、Linux arm64、macOS arm64 的 `layout-runtime` 也通过。但是 Linux amd64 与 macOS amd64 在编译该测试时均于 `LLVMTargetMachineEmitToMemoryBuffer` 中发生 SIGSEGV，Linux 复跑继续失败；macOS amd64 复跑通过，首次失败日志仍保留。Linux 最新状态为 ERROR，尚未执行到布局断言；macOS 为复跑 PASS，不能由此宣称崩溃根因已经修复。
 
-这个结果不说明 `go/types` 已折叠的常量错误；它说明该草案的后端仍有可复现的编译阻塞。当前尚未将根因归到 packed、泛型、参数传递或并行构建中的某一项。仓库额外提供 [小型代码生成探针](../experiments/packed_codegen) 与手动诊断工作流，将完整测试的 `-p=1` 编译和四个更小程序分开记录。这里保留失败，不通过更改目标值把它“修成通过”。
+这个结果不说明 `go/types` 已折叠的常量错误。独立的 [代码生成隔离运行](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40815304481) 中，完整测试在 `-p=1` 下仍崩溃；单独 packed 参数、pack(2)、native func 程序编译运行成功，但普通泛型嵌入字段的 `promoted` 小程序崩溃。这个小程序**没有布局指令**，因此不能直接归因于 packed。源码位于 [小型代码生成探针](../experiments/packed_codegen)；进一步对照 main、具体类型与直接字段 Offsetof，避免把已有后端问题误判为布局 patch 回归。
+
+进一步的 [main / 草案对照运行](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40816298326) 得到：
+
+| Linux amd64 小程序 | 固定 LLGo main | 布局草案 |
+|---|---|---|
+| 泛型嵌入字段，返回 size/align/offset | 编译器 SIGSEGV | 编译器 SIGSEGV |
+| 非泛型嵌入字段，返回 size/align/offset | 编译器 SIGSEGV | 编译器 SIGSEGV |
+| 泛型嵌入字段，只返回 Offsetof | 编译器 SIGSEGV | 编译器 SIGSEGV |
+| 泛型直接字段，只返回 Offsetof | PASS，4 | PASS，4 |
+| packed / pack(2) 参数 | 未执行 | 分别输出 5/1/1、6/2/2 |
+| native 函数值 | 未执行 | 输出 8 |
+
+三个崩溃程序都没有 LLGo 布局注释，且普通 Go 执行通过。由此可以确认它是本次固定 main 已存在的后端问题，不能称为布局 patch 新增回归，也不能归为泛型独有问题。尚未定位到 LLVM/LLGo 的具体责任代码；`Offsetof`、嵌入、聚合参数传递之间的根因仍需后续调试。诊断工作流为了收集后续案例而正常结束，每例的 `COMPILER_CRASH` 与非零退出码仍明确保留，不能把其绿色状态当作兼容性通过。
+
+源码链路可直接复核：[go/types 的 unsafe 内建处理](https://github.com/golang/go/blob/go1.27.3/src/go/types/builtins.go)、[Sizes 接口及 Config 的调用转发](https://github.com/golang/go/blob/go1.27.3/src/go/types/sizes.go)、[SSA builder 从 Info.Types 读取常量](https://github.com/golang/tools/blob/v0.52.0/go/ssa/builder.go#L585)。Sizeof/Alignof 对具体类型调用 Sizes 的对应方法；Offsetof 沿选择路径累加各层 Offsetsof，不能只看最后一层字段偏移。
 
 自定义 Sizes 对已编码的布局模型有效，无法替代 C++ 对象模型和 ABI 信息源。`types.Sizes` 的三个方法本身也不提供 vtable、虚基类寻址、bit-field 位宽、参数寄存器分类或析构信息。参见 [Go 规范](https://go.dev/ref/spec#Size_and_alignment_guarantees)、[SSA API](https://pkg.go.dev/golang.org/x/tools/go/ssa#Program.CreatePackage)。
 
