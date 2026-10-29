@@ -1,3 +1,3 @@
 package probe
 
-const LLGoFiles = "-std=c++20: _native/oracle.cpp"
+const LLGoFiles = "$AUDIT_CXXFLAGS: _native/oracle.cpp"

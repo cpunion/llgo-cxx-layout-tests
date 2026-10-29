@@ -1,0 +1,43 @@
+DEPRECATED: //llgo:type C is deprecated at /private/tmp/llcppg-pr761-review-20261029/lib/clang/clang.go:2707:1; use //llgo:cdecl instead
+DEPRECATED: //llgo:type C is deprecated at /private/tmp/llcppg-pr761-review-20261029/lib/clang/clang.go:2720:1; use //llgo:cdecl instead
+=== RUN   TestCpp
+=== RUN   TestCpp/review_virtual_collision
+2026/10/29 09:58:22 class Shared
+2026/10/29 09:58:22 class Left
+2026/10/29 09:58:22 class Right
+2026/10/29 09:58:22 class Join
+--- FAIL: TestCpp (0.09s)
+    --- FAIL: TestCpp/review_virtual_collision (0.09s)
+panic: multiple fields with the same name
+
+goroutine 5 [running]:
+go/types.NewStruct(...)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/go/types/struct.go:31 +0x150
+github.com/goplus/llcppg/cl.loadDiamondClass(...)
+	/private/tmp/llcppg-pr761-review-20261029/cl/class.go:221 +0x2a4
+github.com/goplus/llcppg/cl.loadClass(...)
+	/private/tmp/llcppg-pr761-review-20261029/cl/class.go:108 +0x338
+github.com/goplus/llcppg/cl.loadDecl(...)
+	/private/tmp/llcppg-pr761-review-20261029/cl/compile.go:211 +0x154
+github.com/goplus/llcppg/cl.loadFiles.func1(...)
+	/private/tmp/llcppg-pr761-review-20261029/cl/compile.go:186 +0xb8
+github.com/goplus/llcppg/clang.VisitChildren.func1(...)
+	/private/tmp/llcppg-pr761-review-20261029/clang/clang.go:305 +0x6c
+github.com/goplus/llcppg/clang.VisitChildren(...)
+	/private/tmp/llcppg-pr761-review-20261029/clang/clang.go:303 +0x54
+github.com/goplus/llcppg/cl.loadFiles(...)
+	/private/tmp/llcppg-pr761-review-20261029/cl/compile.go:181 +0xdc
+github.com/goplus/llcppg/cl.NewPackage(...)
+	/private/tmp/llcppg-pr761-review-20261029/cl/compile.go:126 +0x2dc
+github.com/goplus/llcppg/cl_test.testFromDir.func1(...)
+	/private/tmp/llcppg-pr761-review-20261029/cl/compile_test.go:91 +0x4d4
+github.com/goplus/llcppg/cl/cltest.TestFromDir.func1(...)
+	/private/tmp/llcppg-pr761-review-20261029/cl/cltest/cltest.go:73 +0x88
+testing.tRunner(...)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2195 +0x15c
+testing.toOutputDir(...)
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2937 +0x1e8
+created by testing.(*T).Run in goroutine 4
+	/opt/homebrew/Cellar/go/1.27.3/libexec/src/testing/testing.go:2260 +0x380
+/var/folders/wb/8zzrvxd56294wxlxxbpws9440000gn/T/llgo-test-2322031534/cl.test: exit code 2
+FAIL	github.com/goplus/llcppg/cl	0.506s

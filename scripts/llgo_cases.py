@@ -11,7 +11,8 @@ def run(cmd,env=None):
  return p.returncode,p.stdout
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--llgo',default='llgo');p.add_argument('--generator',default='bin/generate');p.add_argument('--target');p.add_argument('--out',default='results/llgo');p.add_argument('--case',action='append'); a=p.parse_args()
+ os.environ.setdefault('AUDIT_CXXFLAGS','-std=c++20')
+ p=argparse.ArgumentParser();p.add_argument('--llgo',default='llgo');p.add_argument('--generator',default='bin/generate');p.add_argument('--target');p.add_argument('--bindings');p.add_argument('--out',default='results/llgo');p.add_argument('--case',action='append'); a=p.parse_args()
  out=ROOT/a.out;out.mkdir(parents=True,exist_ok=True); records=[]
  work=ROOT/'.work'/out.name;work.mkdir(parents=True,exist_ok=True)
  for source in sorted((ROOT/'cases').iterdir()):
@@ -22,7 +23,15 @@ def main():
   lang=(d/'language').read_text().strip(); cmd=[ROOT/a.generator,'-header',d/'input.h','-output',d/'generated.go','-language',lang]
   if a.target:cmd+=['-target',a.target]
   if lang=='c++':cmd+=['-std','c++20']
-  rc,log=run(cmd);(out/(name+'-generate.log')).write_text(log)
+  if a.bindings:
+   bindings=ROOT/a.bindings
+   generation=json.loads((bindings/'generation.json').read_text())
+   previous=next(r for r in generation['records'] if r['case']==name)
+   rc=previous['generate_exit'];log=(bindings/(name+'-generate.log')).read_text()
+   cmd=previous['command']
+   if rc==0:shutil.copyfile(bindings/(name+'-generated.go.txt'),d/'generated.go')
+  else:rc,log=run(cmd)
+  (out/(name+'-generate.log')).write_text(log)
   record={'case':name,'generate_exit':rc,'generator_command':list(map(str,cmd))}
   if rc:record.update(status='XFAIL' if GEN_KNOWN.get(name) and GEN_KNOWN[name] in log else 'ERROR',reason='generation failed')
   else:
@@ -37,7 +46,7 @@ def main():
    record.update(status=status,test_exit=rc,test_command=cmd)
   records.append(record); print(name,record['status'],flush=True)
  version=run([a.llgo,'version'])[1].strip()
- result={'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'host':platform.platform(),'llgo':version,'llgo_root':os.environ.get('LLGO_ROOT'),'target':a.target,'pins':json.loads((ROOT/'pins.json').read_text()),'records':records}
+ result={'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'host':platform.platform(),'llgo':version,'llgo_root':os.environ.get('LLGO_ROOT'),'target':a.target,'bindings':a.bindings,'pins':json.loads((ROOT/'pins.json').read_text()),'records':records}
  (out/'summary.json').write_text(json.dumps(result,indent=2)+'\n')
  # XFAIL is preserved as a failed compatibility check, never reported as a pass.
  # The harness succeeds if all failures were classified; XPASS is visible and welcome.
