@@ -1,0 +1,13 @@
+package probe
+
+import "github.com/goplus/lib/c"
+
+type Base struct {
+	Value c.Int
+}
+type Derived struct {
+	Base
+	A    c.Uint
+	B    c.Uint
+	Tail c.Int
+}

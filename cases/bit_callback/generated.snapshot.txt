@@ -1,0 +1,24 @@
+package probe
+
+import (
+	"github.com/goplus/lib/c"
+	"github.com/goplus/lib/c/bitfield"
+	"unsafe"
+)
+
+const XGoPackage = true
+
+type CallbackBits struct {
+	_xgo_bits_0 [1]uint8
+	Callback    func()
+}
+
+// unsigned int mode : 1
+func (p *CallbackBits) XGof_get_mode() c.Uint {
+	return c.Uint(bitfield.Unsigned(unsafe.Pointer(p), 0, 1))
+}
+
+// unsigned int mode : 1
+func (p *CallbackBits) XGof_set_mode(v c.Uint) {
+	bitfield.Set(unsafe.Pointer(p), 0, 1, uint64(v))
+}

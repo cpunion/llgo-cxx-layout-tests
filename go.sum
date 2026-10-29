@@ -1,0 +1,14 @@
+github.com/goplus/gogen v1.26.5 h1:DLi+YCw8LF6T7Avv8K5PQD8BXJJ4wMkOHcqWXdv8RHk=
+github.com/goplus/gogen v1.26.5/go.mod h1:Y7ulYW3wonQ3d9er00b0uGFEV/IUZa6okWJZh892ACQ=
+github.com/goplus/lib v0.7.0 h1:3llLCiYiAP08FZXPykTjwy66s7ihQ6c/NOYfrVhjxDk=
+github.com/goplus/lib v0.7.0/go.mod h1:SgJv3oPqLLHCu0gcL46ejOP3x7/2ry2Jtxu7ta32kp0=
+github.com/goplus/llcppg v0.13.7-0.20261028120406-d5f2252953e3 h1:CwCnuMwNDR77lezgqKqYZdapMKDVNI8Zx1fvWhLSiYQ=
+github.com/goplus/llcppg v0.13.7-0.20261028120406-d5f2252953e3/go.mod h1:I3Wk7H89EUTOmOJN+r2+ufCNZXzHG8JlieN3+MZeRKM=
+github.com/goplus/mod v0.22.1 h1:3GQZqKlcQAiMpRUDAHvFryGYie+mT0JMjguEqOtIjkE=
+github.com/goplus/mod v0.22.1/go.mod h1:APrczG2FtFcQelU4vTq9xw+GrVs4sPPKnRfGidWBlXY=
+github.com/llarhub/clang-c v0.10.2 h1:vOV4pd6lS3fhQ91lOErsfxDkAOiOX9vga9rSMWFc+g4=
+github.com/llarhub/clang-c v0.10.2/go.mod h1:owDabNfVRJjKNmdI3SDD7X9zpLb8SfZtLCFpBjDyHIc=
+github.com/qiniu/x v1.19.3 h1:Cc7lAq3uhlf9CQ8uo9nRfFiq09xvwEgH/82b8b+kNvI=
+github.com/qiniu/x v1.19.3/go.mod h1:Sx3Wy+0GI9OsX4a53mYj6A0o7mHJ94PUvraqGYb4EIs=
+golang.org/x/mod v0.42.0 h1:ICeL3t2L30ljSPHHxDnR4fqVcBt/zR2zJAb9juavmQg=
+golang.org/x/mod v0.42.0/go.mod h1:u5fzIrRInkL8MaO1cbRkUHT64v303YIT5KEqpNr7jRs=

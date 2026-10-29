@@ -1,0 +1,8 @@
+package probe
+
+import "github.com/goplus/lib/c"
+
+type Flexible struct {
+	Length c.Int
+	Data   *c.Char
+}

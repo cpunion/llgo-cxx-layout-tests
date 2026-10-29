@@ -1,0 +1,22 @@
+package probe
+
+import (
+	"github.com/goplus/lib/c"
+	"unsafe"
+)
+
+const XGoPackage = true
+
+type UnionBits struct {
+	_xgo_union [1]uint32
+}
+
+func (p *UnionBits) XGof_ref_a() *c.Uint {
+	return (*c.Uint)(unsafe.Pointer(p))
+}
+func (p *UnionBits) XGof_ref_b() *c.Uint {
+	return (*c.Uint)(unsafe.Pointer(p))
+}
+func (p *UnionBits) XGof_ref_raw() *c.Uint {
+	return (*c.Uint)(unsafe.Pointer(p))
+}

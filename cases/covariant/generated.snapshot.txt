@@ -1,0 +1,65 @@
+package probe
+
+import (
+	"github.com/goplus/lib/c"
+	"unsafe"
+)
+
+type ReturnBase struct {
+	Base c.Int
+}
+type ReturnOther struct {
+	Other c.Int
+}
+type ReturnDerived struct {
+	ReturnOther
+	ReturnBase
+	Derived c.Int
+}
+type FactoryBase struct {
+	_xgo_vptr unsafe.Pointer
+}
+type FactoryDerived struct {
+	FactoryBase
+}
+
+//llgo:cdecl
+type X_vtable_FactoryBase struct {
+	Make      func(this *FactoryBase) *ReturnBase
+	BaseAfter func(this *FactoryBase) c.Int
+}
+
+func (p *FactoryBase) XGo_vptr() *X_vtable_FactoryBase {
+	return (*X_vtable_FactoryBase)(p._xgo_vptr)
+}
+
+//llgo:link (*FactoryBase).Make C._ZN11FactoryBase4makeEv
+func (this *FactoryBase) Make() *ReturnBase {
+	return nil
+}
+
+//llgo:link (*FactoryBase).BaseAfter C._ZN11FactoryBase10base_afterEv
+func (this *FactoryBase) BaseAfter() c.Int {
+	return 0
+}
+
+//llgo:cdecl
+type X_vtable_FactoryDerived struct {
+	Make         func(this *FactoryDerived) *ReturnDerived
+	BaseAfter    func(this *FactoryDerived) c.Int
+	DerivedAfter func(this *FactoryDerived) c.Int
+}
+
+func (p *FactoryDerived) XGo_vptr() *X_vtable_FactoryDerived {
+	return (*X_vtable_FactoryDerived)(*(*unsafe.Pointer)(unsafe.Pointer(p)))
+}
+
+//llgo:link (*FactoryDerived).Make C._ZN14FactoryDerived4makeEv
+func (this *FactoryDerived) Make() *ReturnDerived {
+	return nil
+}
+
+//llgo:link (*FactoryDerived).DerivedAfter C._ZN14FactoryDerived13derived_afterEv
+func (this *FactoryDerived) DerivedAfter() c.Int {
+	return 0
+}

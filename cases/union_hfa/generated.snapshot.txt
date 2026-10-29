@@ -1,0 +1,23 @@
+package probe
+
+import (
+	"github.com/goplus/lib/c"
+	"unsafe"
+)
+
+const XGoPackage = true
+
+type Floats struct {
+	X c.Float
+	Y c.Float
+}
+type FloatUnion struct {
+	_xgo_union [1]uint64
+}
+
+func (p *FloatUnion) XGof_ref_a() *Floats {
+	return (*Floats)(unsafe.Pointer(p))
+}
+func (p *FloatUnion) XGof_ref_b() *Floats {
+	return (*Floats)(unsafe.Pointer(p))
+}

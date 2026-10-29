@@ -1,0 +1,42 @@
+package probe
+
+import (
+	"github.com/goplus/lib/c"
+	"github.com/goplus/lib/c/bitfield"
+	"unsafe"
+)
+
+const XGoPackage = true
+
+type AliasBits struct {
+	_xgo_align  [0]uint32
+	_xgo_bits_0 [1]uint8
+	_           [3]uint8
+}
+type Flag = bool
+
+// Flag enabled : 1
+func (p *AliasBits) XGof_get_enabled() Flag {
+	return Flag(bitfield.Unsigned(unsafe.Pointer(p), 0, 1))
+}
+
+// Flag enabled : 1
+func (p *AliasBits) XGof_set_enabled(v Flag) {
+	bitfield.Set(unsafe.Pointer(p), 0, 1, func() uint64 {
+		if v {
+			return 1
+		} else {
+			return 0
+		}
+	}())
+}
+
+// unsigned int count : 7
+func (p *AliasBits) XGof_get_count() c.Uint {
+	return c.Uint(bitfield.Unsigned(unsafe.Pointer(p), 1, 7))
+}
+
+// unsigned int count : 7
+func (p *AliasBits) XGof_set_count(v c.Uint) {
+	bitfield.Set(unsafe.Pointer(p), 1, 7, uint64(v))
+}

@@ -1,0 +1,24 @@
+package probe
+
+import (
+	"github.com/goplus/lib/c"
+	"unsafe"
+)
+
+const XGoPackage = true
+
+type Packet struct {
+	A       c.Uint
+	B       c.Uint
+	Payload _llcppg_anon_0
+}
+type _llcppg_anon_0 struct {
+	_xgo_union [1]uint32
+}
+
+func (p *_llcppg_anon_0) XGof_ref_x() *c.Int {
+	return (*c.Int)(unsafe.Pointer(p))
+}
+func (p *_llcppg_anon_0) XGof_ref_f() *c.Float {
+	return (*c.Float)(unsafe.Pointer(p))
+}

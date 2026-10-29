@@ -1,0 +1,40 @@
+package probe
+
+import (
+	"github.com/goplus/lib/c"
+	"github.com/goplus/lib/c/bitfield"
+	"unsafe"
+)
+
+const XGoPackage = true
+
+type Flags16 struct {
+	_xgo_align  [0]uint64
+	_xgo_bits_0 [1]uint8
+	_           [15]uint8
+}
+type Container struct {
+	Prefix c.Char
+	Flags  Flags16
+	Suffix c.Char
+}
+
+// unsigned int a : 3
+func (p *Flags16) XGof_get_a() c.Uint {
+	return c.Uint(bitfield.Unsigned(unsafe.Pointer(p), 0, 3))
+}
+
+// unsigned int a : 3
+func (p *Flags16) XGof_set_a(v c.Uint) {
+	bitfield.Set(unsafe.Pointer(p), 0, 3, uint64(v))
+}
+
+// unsigned int b : 5
+func (p *Flags16) XGof_get_b() c.Uint {
+	return c.Uint(bitfield.Unsigned(unsafe.Pointer(p), 3, 5))
+}
+
+// unsigned int b : 5
+func (p *Flags16) XGof_set_b(v c.Uint) {
+	bitfield.Set(unsafe.Pointer(p), 3, 5, uint64(v))
+}

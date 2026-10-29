@@ -1,0 +1,7 @@
+{
+  "llcppg": "d5f2252953e3a89004821afae4de9e2ff947607e",
+  "llgo": "b2e1d4e84fcccdc893b77a652c2f5c9b2fc65836",
+  "virtual_base_pr": "fcfde2b6b240bfe8e470d363b412cbe79b7adf78",
+  "layout_pr": "2ed55ca77532f91e145f407a3528c8051a27c362",
+  "llvm_reference": "22.1.8"
+}
