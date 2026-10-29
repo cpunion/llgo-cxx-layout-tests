@@ -23,6 +23,16 @@ jobs:
         with:
           llvm-version: '22'
       - uses: ./.github/actions/setup-go
+      - name: Build pinned main compiler
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/main-bin"
+          go build -o "$RUNNER_TEMP/main-bin/llgo" ./cmd/llgo
+      - name: Compare plain generic programs with main
+        working-directory: audit
+        shell: bash
+        run: |
+          LLGO_ROOT="$GITHUB_WORKSPACE" python3 scripts/isolate_codegen.py --plain-only --llgo "$RUNNER_TEMP/main-bin/llgo" --out results/main-isolation
       - name: Build pinned proposal compiler
         shell: bash
         working-directory: layout-source
