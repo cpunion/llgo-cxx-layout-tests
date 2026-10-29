@@ -312,9 +312,9 @@ SSA 本身不解析 LLGo 布局指令，不持有可用于事后重算全部 uns
 
 ### 4. 修复归属：编译器问题与生成器问题需要分别隔离
 
-汇总跟踪：[LLGo #2943](https://github.com/xgo-dev/llgo/issues/2943) 负责编译器失败和原生表示能力；[llcppg #1123](https://github.com/goplus/llcppg/issues/1123) 负责生成错误和编译器依赖。已有专项 issue 继续作为对应问题的主入口，不逐用例重复建单。
+汇总跟踪仅保留设计错误和已复现的实现 bug：[LLGo #2943](https://github.com/xgo-dev/llgo/issues/2943) 跟踪编译崩溃、native 查询/元数据不一致；[llcppg #1123](https://github.com/goplus/llcppg/issues/1123) 跟踪错误设计规则和错误生成结果。已有专项 issue 继续作为对应问题的主入口，不逐用例重复建单。未实现能力、工具链支持范围和根因未隔离的平台现象保留为本报告的研究记录，不列入这两个 bug 汇总。
 
-归属不能仅按“布局错误”或“ABI 错误”的名称判断。先看生成表示是否准确传递了原生类型信息，再检查 LLGo 对该表示的存储、查询、反射和调用是否一致。某个原生语义没有可表达的 LLGo 契约时，编译器能力建设与生成器接入分别跟踪；wrapper 或明确拒绝也是生成器可以采用的边界，不代表必须先修改 LLVM。
+归属不能仅按“布局错误”或“ABI 错误”的名称判断。先看生成表示是否准确传递了原生类型信息，再检查 LLGo 对该表示的存储、查询、反射和调用是否一致。缺少某项功能本身不算实现 bug；接受输入后生成错误布局或不可兼容的调用才是本轮跟踪的缺陷。无法表示的输入可以明确拒绝，修复并不要求补齐全部语言能力。
 
 新增 [ownership_controls.py](../scripts/ownership_controls.py) 对两份真实生成快照做最小手动修改，再运行原来的原生 oracle 和 Go 断言。以下补测仅在 macOS arm64、LLVM 22 上执行，不替代七平台生成器矩阵：
 
@@ -325,14 +325,14 @@ SSA 本身不解析 LLGo 布局指令，不持有可用于事后重算全部 uns
 
 第二项只是这个具体 union 的诊断表示，不是所有 ABI 上通用的 union 实现。Windows x86 的 union align 4/8 差异尚未完成同样的 native 标记与物理存储对照，暂不强行归责。
 
-需要 LLGo 跟踪的部分：
+LLGo 汇总保留两类实现 bug：
 
 - 无布局指令的嵌入结构触发 Linux amd64 编译崩溃，main 与草案均复现。
-- 已有 native 声明仍出现 unsafe/go-types、反射和物理布局不一致；优先关联现有 #2796、#2873、#2872，不重复建同类 bug。本次补测没有执行 reflect.Call，不能将其写成对 #2872 的新运行复现。
-- packed 的编译器支持由 PR #2937 跟踪；显式提高 record 对齐、overlap/base-subobject 描述需要额外契约。`pack N` 只是降低字段对齐上限，不能表达 `alignas(N)`。
-- 如果选择直接传递非平凡 C++ 值或通用原生 union，需要讨论导入 Clang ABI 信息的编译器接口；这是条件性的能力提案，不能称为 LLGo 已拿到正确 C++ 元数据却错误处理。生成器也可以选择 C++ wrapper 或明确拒绝不支持的直接调用。
+- 已有 native 声明仍出现 unsafe 查询与反射元数据错误；关联 [#2796](https://github.com/xgo-dev/llgo/issues/2796)、[#2873](https://github.com/xgo-dev/llgo/issues/2873)。本次补测没有执行 reflect.Call，不能将其写成对 #2872 的新运行复现。
 
-llcppg 负责生成错误、指令接入和不支持类型的诊断：位字段组合/typedef bool、callback 属性、union carrier、协变返回槽、基类 flatten、模板特化/concept、符号装饰与 host/target 配置。packed、过度对齐、非平凡值等需要编译器能力时，生成器条目链接对应依赖，避免两个仓库重复记录同一个修复目标。
+llcppg 汇总分开列出设计错误（#1029 的偏移算法/兼容性判据、#1030 的检查规则）和实现 bug（位字段组合与 bool getter、callback 标记、无诊断的错误 packed/alignas 输出、union carrier/accessor、协变返回、柔性数组、基类尾部复用、错误的非平凡值调用和符号装饰）。PR #761 的三个缺陷独立注明其未合并版本。
+
+`_Atomic`、成员指针、模板/concept 支持缺口、Windows 本机生成器缺实现、旧版 libclang 动态库兼容性、大端源码风险等未列入这两个 bug 汇总。`bit_align` 的有警告降级也只保留实测事实；普通 `packed_plain`/`aligned_plain` 在无 unsupported 诊断的情况下生成错误 record，属于需要修复的错误输出。#1123 对它们的验收允许明确拒绝转换，不要求新建布局功能。
 
 ## 六、较新语言规范的后续建议
 
