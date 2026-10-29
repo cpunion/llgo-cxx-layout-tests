@@ -7,7 +7,7 @@ groups={
  'ci-reference':['ci-reference-final'],
  'llgo':['llgo-final','ci-llgo'],
  'libclang':['libclang-versions','cross-mangling'],
- 'proposal-ssa':['padding-gc.log','padding-final.log','pr761-layout.log','ssa-custom.log','ssa-gc.log','ssa-patched-llgo.log','ssa-layout-final.log','ssa-layout-gc.log'],
+ 'proposal-ssa':['padding-gc.log','padding-final.log','pr761-layout.log','ssa-custom.log','ssa-gc.log','ssa-patched-llgo.log','ssa-patched-gc.log','ssa-layout-final.log','ssa-layout-gc.log'],
 }
 index={}
 for name,items in groups.items():

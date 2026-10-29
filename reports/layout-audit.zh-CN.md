@@ -108,6 +108,16 @@ M14 的原生函数只返回 `&argument` 的数值，不解引用错误地址，
 
 这 20 个 main 探针在 Linux amd64/arm64、macOS amd64/arm64 的原生 CI 中均完成：1 个正向控制 PASS，19 个 XFAIL（包括上述错误和后文的支持缺口）。这四组结果没有未分类 ERROR。
 
+Windows amd64 的同一批用例得到 1 PASS、16 XFAIL、3 XPASS：`nontrivial_value`、`nonvirtual_tail`、`union_hfa` 在该 MSVC ABI 下没有复现相同错误。XPASS 只表示这个具体断言通过，不代表已验证全部生命周期规则。
+
+Windows x86 又实际暴露三个不同失败模式，不能硬套 64 位用例的解释：
+
+- `bit_callback`：生成器警告 callback 放不进其原生偏移，退化为 opaque storage；size 可保留，但 Callback 字段和所需访问 API 缺失。它是明确降级后的功能缺口，不是成功生成了一个可访问的 callback 结构。
+- `nontrivial_value`：Linux 主机按 i686 MSVC 目标生成的绑定保留 `_accept_nontrivial` 前缀；LLGo 再进行目标符号装饰，链接器报告 `__accept_nontrivial` 未定义。该平台上尚未执行到非平凡传参断言。
+- `union_hfa`：测试先观察到 Go align 4、C align 8，因此没有继续把结果归因于 HFA 传参。这是独立的 32 位 union 对齐错误。
+
+运行器以独立 `failure_kind` 保存这三个诊断；旧 CI 首次遇到它们时按 ERROR/FAIL 暴露，确认原因后才加入已知失败分类。原始非零退出码保留。
+
 ### 5. PR #761 不能按旧说明判断最新实现
 
 [PR #761](https://github.com/goplus/llcppg/pull/761) 的旧正文仍描述拒绝 diamond join，但审计提交已经有 flattening。最新代码实际验证出三个问题：

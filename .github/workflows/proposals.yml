@@ -1,0 +1,65 @@
+name: Layout proposal and SSA probes
+on:
+  push:
+    paths: ['proposals/**','experiments/ssa/**','scripts/proposals.py','.github/workflows/proposals.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, target: linux-amd64}
+          - {os: ubuntu-24.04-arm, target: linux-arm64}
+          - {os: macos-latest, target: darwin-arm64}
+          - {os: macos-15-intel, target: darwin-amd64}
+          - {os: windows-2022, target: windows-amd64, arch: amd64, host: x64}
+          - {os: windows-2022, target: windows-386, arch: '386', host: x64}
+          - {os: windows-11-arm, target: windows-arm64, arch: arm64, host: arm64}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: xgo-dev/llgo
+          ref: b2e1d4e84fcccdc893b77a652c2f5c9b2fc65836
+      - uses: actions/checkout@v4
+        with:
+          repository: cpunion/llgo
+          ref: 2ed55ca77532f91e145f407a3528c8051a27c362
+          path: layout-source
+      - uses: actions/checkout@v4
+        with:
+          path: audit
+      - uses: ./.github/actions/setup-deps
+        with:
+          llvm-version: '22'
+          windows-abi: msvc
+          windows-arch: ${{ matrix.arch || 'amd64' }}
+          windows-msvc-dependencies: runtime
+      - uses: ./.github/actions/setup-go
+        with:
+          architecture: ${{ matrix.host || '' }}
+      - name: Build the pinned layout-proposal compiler
+        shell: bash
+        working-directory: layout-source
+        run: |
+          mkdir -p "$RUNNER_TEMP/layout-bin"
+          go build -o "$RUNNER_TEMP/layout-bin/llgo${{ runner.os == 'Windows' && '.exe' || '' }}" ./cmd/llgo
+          echo "$RUNNER_TEMP/layout-bin" >> "$GITHUB_PATH"
+          echo "LLGO_ROOT=$GITHUB_WORKSPACE/layout-source" >> "$GITHUB_ENV"
+      - uses: ./.github/actions/activate-windows-target
+        if: runner.os == 'Windows'
+        with:
+          windows-abi: msvc
+          windows-arch: ${{ matrix.arch }}
+      - name: Execute proposal and SSA probes
+        shell: bash
+        working-directory: audit
+        run: python3 scripts/proposals.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: proposals-${{ matrix.target }}
+          path: audit/results/
