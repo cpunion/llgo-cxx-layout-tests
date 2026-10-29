@@ -334,6 +334,13 @@ llcppg 汇总分开列出设计错误（#1029 的偏移算法/兼容性判据、
 
 `_Atomic`、成员指针、模板/concept 支持缺口、Windows 本机生成器缺实现、旧版 libclang 动态库兼容性、大端源码风险等未列入这两个 bug 汇总。`bit_align` 的有警告降级也只保留实测事实；普通 `packed_plain`/`aligned_plain` 在无 unsupported 诊断的情况下生成错误 record，属于需要修复的错误输出。#1123 对它们的验收允许明确拒绝转换，不要求新建布局功能。
 
+已将匹配现有提案的支持缺口单独回复，保持与 bug 汇总分离：
+
+- [llcppg #1033：atomic 成员尚未实现](https://github.com/goplus/llcppg/issues/1033#issuecomment-6488535153)。
+- [llcppg #770：位字段扩展对齐和大端路径](https://github.com/goplus/llcppg/issues/770#issuecomment-6488535595)；区分运行证据与源码检查。
+- [llcppg #1029：模板特化和 concept 映射范围](https://github.com/goplus/llcppg/issues/1029#issuecomment-6488536077)。
+- [LLGo #2788：padding 草案已实现与明确保留的范围](https://github.com/xgo-dev/llgo/issues/2788#issuecomment-6488536587)。
+
 ## 六、较新语言规范的后续建议
 
 这部分优先级低于已复现的基础对象模型问题。
