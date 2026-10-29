@@ -1,6 +1,6 @@
 module github.com/cpunion/llgo-cxx-layout-tests
 
-go 1.27.3
+go 1.27.0
 
 require (
 	github.com/goplus/gogen v1.26.5

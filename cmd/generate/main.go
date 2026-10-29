@@ -51,6 +51,9 @@ func main() {
 		Language:      lang,
 		Importer:      packages.NewImporter(nil, root),
 		PubFileLookup: func(string) (string, bool) { return "", false },
+		PackageOf: func(file string) (string, bool) {
+			return "github.com/cpunion/llgo-cxx-layout-tests/probe", filepath.Clean(file) == abs
+		},
 	})
 	if err != nil {
 		panic(err)
