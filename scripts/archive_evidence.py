@@ -4,9 +4,9 @@ import collections,hashlib,json,pathlib,zipfile
 ROOT=pathlib.Path(__file__).resolve().parents[1];RESULTS=ROOT/'results';OUT=ROOT/'evidence';OUT.mkdir(exist_ok=True)
 groups={
  'local-reference': ['clang18','clang19','clang20','clang21','clang22','clang23','clangapple21','clang23-compat22','local-native','embedded','xtensa-esp32','c-native',*['extra'+str(v) for v in range(18,24)]],
- 'ci-reference':['ci-reference'],
+ 'ci-reference':['ci-reference-final'],
  'llgo':['llgo-final','ci-llgo'],
- 'libclang':['libclang-versions'],
+ 'libclang':['libclang-versions','cross-mangling'],
  'proposal-ssa':['padding-gc.log','padding-final.log','pr761-layout.log','ssa-custom.log','ssa-gc.log','ssa-patched-llgo.log','ssa-layout-final.log','ssa-layout-gc.log'],
 }
 index={}
@@ -33,7 +33,7 @@ for case in sorted({r['case'] for obj in data.values() for r in obj['records']})
  lines+=['| '+case+' | '+' | '.join(row)+' |']
 (OUT/'llgo-matrix.md').write_text('\n'.join(lines)+'\n')
 lines=['# 原生 C++ 参考运行','', '| 目标 | 编译器 | 语言模式 | 状态 |','|---|---|---|---|']
-for p in sorted((RESULTS/'ci-reference').rglob('summary.json')):
+for p in sorted((RESULTS/'ci-reference-final').rglob('summary.json')):
  obj=json.loads(p.read_text())
  for r in obj['records']:
   if 'native' in r:lines+=['| '+r['target']+' | '+obj['compiler'].splitlines()[0]+' | '+r['std']+' | '+r['status']+' |']

@@ -163,7 +163,7 @@ M14 的原生函数只返回 `&argument` 的数值，不解引用错误地址，
 
 生成器解析头文件、编译 wrapper、编译 Go、链接原生库必须共享同一套目标配置。配置至少包括 triple、ABI、CPU/features、packing、bit-field 模式、short-enum/wchar 选项、语言标准、宏、sysroot/header 版本、编译器 ABI 兼容版本。仅把 CFlags 传给 wrapper，无法保证解析阶段看到相同布局。
 
-还发现 host/target 的符号处理边界：Darwin 主机的 `Mangling` 实现无条件删除首字符；这不是通用的跨目标处理规则。Windows 本机又缺少实现。跨编译能力需要独立定义和测试，不能从“libclang 接受 --target”推导生成器已完整支持该目标。
+还实际复现了 host/target 的符号处理错误：[cross_mangling.h](../probes/cross_mangling.h) 声明 `extern "C" int audit_symbol(int)`，在 Darwin 主机上生成 Linux x86_64 或 Windows x64 目标时，绑定写成 `C.udit_symbol`，误删了 `a`。Darwin 主机的 `Mangling` 实现无条件删除首字符；这不是通用的跨目标处理规则。Windows 本机又缺少实现。跨编译能力需要独立定义和测试，不能从“libclang 接受 --target”推导生成器已完整支持该目标。
 
 ## 三、平台与编译器版本验证
 
@@ -216,7 +216,7 @@ struct PackedABI {
 
 同一 packed 例子在 Clang 22 的 Linux x86_64 为 10/1/value@6，Linux aarch64 为 12/4/value@6，Windows MSVC x86_64 为 11/1/value@7。零宽 bit-field 可改变对齐规则，`packed` 不能概括为跨 ABI 的统一逐字节紧排算法。
 
-版本审计还必须单列 libclang：以固定 llcppg/LLGo 构建的生成器，替换加载 libclang 18～20 时，实际因缺少 `clang_Cursor_isGCCAssemblyVolatile` 等符号而无法启动；21、22、23 可启动，本次成功生成的用例源码哈希相同。此实验说明当前绑定的库版本下限，**不代表 libclang 18～20 的语言布局错误**，也不代表 LLGo 已支持 LLVM 18～23 后端构建。后端始终固定为 LLVM 22。
+版本审计还必须单列 libclang：以固定 llcppg/LLGo 构建的生成器，替换加载 libclang 18～20 时，实际因缺少 `clang_Cursor_isGCCAssemblyVolatile` 等符号而无法启动；21、22、23 可启动，本次成功生成的用例源码哈希相同。此实验说明这份固定二进制的动态库兼容边界（不等价于更换绑定版本或裁剪符号后的所有构建下限），**不代表 libclang 18～20 的语言布局错误**，也不代表 LLGo 已支持 LLVM 18～23 后端构建。后端始终固定为 LLVM 22。
 
 ### 3. 验证覆盖与方法限制
 

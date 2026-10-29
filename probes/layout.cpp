@@ -100,7 +100,7 @@ extern "C" Nontrivial call_nontrivial(Nontrivial x) { return x; }
 extern "C" TrivialABI call_trivial_abi(TrivialABI x) { return x; }
 #ifdef AUDIT_NATIVE
 #include <stdio.h>
-template<class T, class U> long long delta(T *p, U *q) { return (char*)p - (char*)q; }
+template<class T, class U> long long delta(T *p, U *q) { return (long long)((__UINTPTR_TYPE__)p - (__UINTPTR_TYPE__)q); }
 int main() {
  printf("{\"facts\":[");
  for (unsigned i=0; i<sizeof(audit_facts)/sizeof(*audit_facts); ++i) printf("%s%llu", i ? "," : "", audit_facts[i]);

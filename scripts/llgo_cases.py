@@ -6,6 +6,21 @@ KNOWN={'bit_nested':'AUDIT_LAYOUT','base_bits':'AUDIT_LAYOUT','bit_callback':'AU
 KNOWN.update({name:'AUDIT_LAYOUT' for name in ['packed_plain','aligned_plain','empty_plain','empty_nua','nonvirtual_tail']})
 KNOWN.update({'nontrivial_value':'AUDIT_NONTRIVIAL','member_pointers':'undefined: Holder','template_specialization':'undefined: B','atomic_member':'undefined: AtomicMember'})
 GEN_KNOWN={'concept_specialization':'loadDecl: unknown kind - 604'}
+def classify(name,code,log,generation_log,target):
+ pattern=KNOWN.get(name)
+ if code==0:return ('XPASS' if pattern else 'PASS'),None
+ # Independently verified Win32 failures. They are different failure modes
+ # from the native 64-bit case, so preserve a separate reason in the JSON.
+ if target=='i686-pc-windows-msvc':
+  if name=='bit_callback' and 'opaque storage' in generation_log and 'type CallbackBits has no field or method Callback' in log:
+   return 'XFAIL','win32_opaque_callback_access'
+  if name=='nontrivial_value' and 'undefined symbol: __accept_nontrivial' in log:
+   return 'XFAIL','win32_symbol_double_decoration'
+  if name=='union_hfa' and 'AUDIT_LAYOUT align Go=4 C=8' in log:
+   return 'XFAIL','win32_union_alignment'
+ if pattern and re.search(pattern,log,re.S):return 'XFAIL',name
+ return ('FAIL' if '--- FAIL:' in log else 'ERROR'),None
+
 def run(cmd,env=None):
  p=subprocess.run(list(map(str,cmd)),cwd=ROOT,env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
  return p.returncode,p.stdout
@@ -32,18 +47,15 @@ def main():
    if rc==0:shutil.copyfile(bindings/(name+'-generated.go.txt'),d/'generated.go')
   else:rc,log=run(cmd)
   (out/(name+'-generate.log')).write_text(log)
+  generation_log=log
   record={'case':name,'generate_exit':rc,'generator_command':list(map(str,cmd))}
   if rc:record.update(status='XFAIL' if GEN_KNOWN.get(name) and GEN_KNOWN[name] in log else 'ERROR',reason='generation failed')
   else:
    shutil.copyfile(d/'generated.go',out/(name+'-generated.go.txt'))
    cmd=[a.llgo,'test','-count=1','-v','./'+str(d.relative_to(ROOT))]
    rc,log=run(cmd);(out/(name+'-test.log')).write_text(log)
-   pattern=KNOWN.get(name)
-   if rc==0:status='XPASS' if pattern else 'PASS'
-   elif pattern and re.search(pattern,log,re.S):status='XFAIL'
-   elif '--- FAIL:' in log:status='FAIL'
-   else:status='ERROR'
-   record.update(status=status,test_exit=rc,test_command=cmd)
+   status,reason=classify(name,rc,log,generation_log,a.target)
+   record.update(status=status,failure_kind=reason,test_exit=rc,test_command=cmd)
   records.append(record); print(name,record['status'],flush=True)
  version=run([a.llgo,'version'])[1].strip()
  result={'utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'host':platform.platform(),'llgo':version,'llgo_root':os.environ.get('LLGO_ROOT'),'target':a.target,'bindings':a.bindings,'pins':json.loads((ROOT/'pins.json').read_text()),'records':records}

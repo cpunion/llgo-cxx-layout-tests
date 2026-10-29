@@ -21,7 +21,7 @@ void write(const char *s) {hostcall(4,s);}
 void finish(unsigned code) { unsigned arg[]={0x20026,code};hostcall(0x20,arg); for(;;){} }
 #endif
 void number(unsigned x) { char s[12]; unsigned n=11; s[n]=0;do{s[--n]='0'+x%10;x/=10;}while(x);write(s+n); }
-template<class T,class U> unsigned delta(T*p,U*q) {return (char*)p-(char*)q;}
+template<class T,class U> unsigned delta(T*p,U*q) {return (__UINTPTR_TYPE__)p-(__UINTPTR_TYPE__)q;}
 __attribute__((noinline)) int dispatch(V *v) { return v->value(); }
 extern "C" void audit_start() {
  write("{\"facts\":[");

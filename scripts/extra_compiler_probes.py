@@ -23,7 +23,7 @@ for source,standards,targets in [('empty.c',['gnu17','c17'],TARGETS),('version_p
       result=subprocess.run([str(exe.resolve())],text=True,capture_output=True);(out/(key+'-native.log')).write_text(result.stdout+result.stderr)
       row['native_facts']=[int(n) for n in result.stdout.split()] if result.returncode==0 else []
       row['status']='NATIVE_PASS' if result.returncode==0 and row['native_facts']==row['facts'] else 'FAIL'
-   elif std=='c17' and 'empty' in log:row['status']='EXPECTED_EXTENSION_REJECTION'
+   elif std=='c17' and 'error: empty struct is a GNU extension' in log:row['status']='EXPECTED_EXTENSION_REJECTION'
    else:row.update(status='ERROR',diagnostic=log)
    rows.append(row)
 (out/'summary.json').write_text(json.dumps({'compiler':subprocess.check_output([a.clang,'--version'],text=True),'records':rows},indent=2)+'\n')
