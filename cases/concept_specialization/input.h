@@ -1,0 +1,1 @@
+template<class T> concept Small=(sizeof(T)<=4); template<class T> struct Choice { T value; long long tag; }; template<Small T> struct Choice<T> { T value; }; using A=Choice<int>; using B=Choice<long long>;

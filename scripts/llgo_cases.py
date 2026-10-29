@@ -3,6 +3,9 @@
 import argparse, datetime, json, os, pathlib, platform, re, shutil, subprocess, sys
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 KNOWN={'bit_nested':'AUDIT_LAYOUT','base_bits':'AUDIT_LAYOUT','bit_callback':'AUDIT_LAYOUT','bit_align':'AUDIT_LAYOUT','flexible':'AUDIT_LAYOUT','union_bits':'AUDIT_UNION_BITS','union_hfa':'AUDIT_HFA','covariant':'AUDIT_COVARIANT','bool_typedef':r'cannot convert .*uint64.*(?:Flag|bool)'}
+KNOWN.update({name:'AUDIT_LAYOUT' for name in ['packed_plain','aligned_plain','empty_plain','empty_nua','nonvirtual_tail']})
+KNOWN.update({'nontrivial_value':'AUDIT_NONTRIVIAL','member_pointers':'undefined: Holder','template_specialization':'undefined: B','atomic_member':'undefined: AtomicMember'})
+GEN_KNOWN={'concept_specialization':'loadDecl: unknown kind - 604'}
 def run(cmd,env=None):
  p=subprocess.run(list(map(str,cmd)),cwd=ROOT,env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
  return p.returncode,p.stdout
@@ -21,7 +24,7 @@ def main():
   if lang=='c++':cmd+=['-std','c++20']
   rc,log=run(cmd);(out/(name+'-generate.log')).write_text(log)
   record={'case':name,'generate_exit':rc,'generator_command':list(map(str,cmd))}
-  if rc:record.update(status='ERROR',reason='generation failed')
+  if rc:record.update(status='XFAIL' if GEN_KNOWN.get(name) and GEN_KNOWN[name] in log else 'ERROR',reason='generation failed')
   else:
    shutil.copyfile(d/'generated.go',out/(name+'-generated.go.txt'))
    cmd=[a.llgo,'test','-count=1','-v','./'+str(d.relative_to(ROOT))]

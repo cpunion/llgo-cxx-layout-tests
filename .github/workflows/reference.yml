@@ -1,6 +1,7 @@
 name: C and C++ reference matrix
 on:
   push:
+    paths: ['probes/**', 'scripts/reference.py', 'scripts/fact_names.py', '.github/workflows/reference.yml']
   workflow_dispatch:
 permissions:
   contents: read

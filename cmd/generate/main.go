@@ -9,6 +9,7 @@ import (
 	"github.com/goplus/gogen/packages"
 	"github.com/goplus/llcppg/cl"
 	"github.com/goplus/llcppg/clang"
+	clangc "github.com/llarhub/clang-c"
 )
 
 func main() {
@@ -18,6 +19,7 @@ func main() {
 	target := flag.String("target", "", "Clang target triple")
 	standard := flag.String("std", "", "language standard")
 	flag.Parse()
+	fmt.Println("libclang:", clang.GoStringAndDispose(clangc.GetClangVersion()))
 	if *header == "" || *output == "" {
 		panic("-header and -output are required")
 	}
