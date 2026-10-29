@@ -312,6 +312,8 @@ SSA 本身不解析 LLGo 布局指令，不持有可用于事后重算全部 uns
 
 ### 4. 修复归属：编译器问题与生成器问题需要分别隔离
 
+汇总跟踪：[LLGo #2943](https://github.com/xgo-dev/llgo/issues/2943) 负责编译器失败和原生表示能力；[llcppg #1123](https://github.com/goplus/llcppg/issues/1123) 负责生成错误和编译器依赖。已有专项 issue 继续作为对应问题的主入口，不逐用例重复建单。
+
 归属不能仅按“布局错误”或“ABI 错误”的名称判断。先看生成表示是否准确传递了原生类型信息，再检查 LLGo 对该表示的存储、查询、反射和调用是否一致。某个原生语义没有可表达的 LLGo 契约时，编译器能力建设与生成器接入分别跟踪；wrapper 或明确拒绝也是生成器可以采用的边界，不代表必须先修改 LLVM。
 
 新增 [ownership_controls.py](../scripts/ownership_controls.py) 对两份真实生成快照做最小手动修改，再运行原来的原生 oracle 和 Go 断言。以下补测仅在 macOS arm64、LLVM 22 上执行，不替代七平台生成器矩阵：

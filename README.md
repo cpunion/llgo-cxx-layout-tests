@@ -4,6 +4,7 @@
 
 - **[完整调研报告](reports/layout-audit.zh-CN.md)**：提案/实现不准确部分、不完整部分、建议；较新语言规范放在最后。
 - **[证据索引与覆盖矩阵](evidence/README.md)**：区分原生执行、模拟器执行、仅交叉编译和未覆盖项。
+- 修复跟踪：[LLGo #2943](https://github.com/xgo-dev/llgo/issues/2943)、[llcppg #1123](https://github.com/goplus/llcppg/issues/1123)。
 - [固定版本](pins.json)、[当前生成器探针](cases)、[padding/pack 与 PR #761 探针](proposals)、[SSA 实验](experiments/ssa)。
 
 C++ 参考测试通过不表示 Go 绑定兼容。`XFAIL` 表示实际失败，`XPASS` 表示该平台上未复现既知问题，`ERROR` 表示测试没有完成。CI 绿色意味着参考检查通过且兼容性失败已分类，**不代表所有兼容性测试通过**。
