@@ -1,7 +1,7 @@
 name: C and C++ reference matrix
 on:
   push:
-    paths: ['probes/**', 'scripts/reference.py', 'scripts/fact_names.py', '.github/workflows/reference.yml']
+    paths: ['probes/**', 'scripts/reference.py', 'scripts/fact_names.py', 'scripts/extra_compiler_probes.py', 'scripts/embedded.py', '.github/workflows/reference.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -31,6 +31,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y g++-multilib
       - name: Execute native probes
         run: python3 scripts/reference.py --target ${{ matrix.target }} --std c++20 --std c++23 --native --out results/native
+      - name: Native C extension probe
+        run: python3 scripts/extra_compiler_probes.py --target ${{ matrix.target }} --native --out results/c-native
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -51,9 +53,20 @@ jobs:
           sudo ./llvm.sh ${{ matrix.llvm }}
       - name: Cross-target final-layout probes
         run: python3 scripts/reference.py --clang clang++-${{ matrix.llvm }} --out results/cross
+      - name: C extension and minimal version probes
+        run: python3 scripts/extra_compiler_probes.py --clang clang-${{ matrix.llvm }} --out results/extra
       - name: Native upstream compiler probes
         if: always()
         run: python3 scripts/reference.py --clang clang++-${{ matrix.llvm }} --target x86_64-unknown-linux-gnu --native --out results/native
+      - uses: bytecodealliance/actions/wasmtime/setup@v1
+        if: matrix.llvm == 22
+        with:
+          version: v48.0.1
+      - name: Execute embedded and WASI reference probes
+        if: matrix.llvm == 22
+        run: |
+          sudo apt-get install -y qemu-system-arm qemu-system-misc lld-22
+          python3 scripts/embedded.py --clang clang++-22
       - uses: actions/upload-artifact@v4
         if: always()
         with:

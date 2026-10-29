@@ -1,0 +1,27 @@
+{
+  "local-reference.zip": {
+    "sha256": "e7477ce4e9e2d72d2d86f0d4518bc92214e2c10834a11cc8919ad7dda19b0289",
+    "files": 1181,
+    "bytes": 1007067
+  },
+  "ci-reference.zip": {
+    "sha256": "1c2b725f49243061d5c4930e718a7d4d9273330f7e3538f2cfd317ba64c8893c",
+    "files": 900,
+    "bytes": 929599
+  },
+  "llgo.zip": {
+    "sha256": "fb4de552edb01586f37c7d5b08d28d0f9d388783994545281b4f0836a5424c47",
+    "files": 415,
+    "bytes": 179989
+  },
+  "libclang.zip": {
+    "sha256": "7aed911a7f2849ffa91119a23f8f416ebdf156606e3ac4d1e9e05fbab32648eb",
+    "files": 178,
+    "bytes": 68462
+  },
+  "proposal-ssa.zip": {
+    "sha256": "6f3c8d0c967a9df64700124b050e7bded8d35e9ea3be96fcb164a4ceb20253c4",
+    "files": 8,
+    "bytes": 4733
+  }
+}
