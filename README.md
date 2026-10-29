@@ -78,3 +78,7 @@ QEMU 使用 Cortex-M3 `mps2-an385` 和 RV32 `virt`；wasm32 通过 WASI 在 Wasm
 ## 仓库约定
 
 `probes/` 是原生 oracle；`cases/` 是生成器输入与 Go 断言；`proposals/` 单独保存未合并提案实验；`results/`、`.work/`、`bin/` 是忽略的本地输出；`evidence/` 保存此次审计的压缩原始证据与可读摘要。不要手改生成快照来让测试通过，也不要把预期失败改成普通 PASS。
+
+## 修复归属对照
+
+`python3 scripts/ownership_controls.py --llgo /path/to/llgo` 在 macOS arm64 上修改两份生成快照，隔离生成表示与编译器问题。它不会修改生成器：callback 仅补 cdecl，union 改用保留浮点分类的 carrier。设置对应 `LLGO_ROOT`；main 的 callback 查询/反射断言仍失败，布局草案通过。日志在 `evidence/llgo.zip` 的 ownership / ownership-proposal 目录；这些控制不能当作已修复的生成器或跨平台结论。

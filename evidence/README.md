@@ -9,7 +9,7 @@
 | [LLGo 逐用例矩阵](llgo-matrix.md) | 各原生平台的 PASS/XFAIL/XPASS/ERROR，不能仅以 CI 绿色判断兼容 |
 | [local-reference.zip](local-reference.zip) | 本地 Clang 18～23、Apple Clang 的 420 条 cross 配置；最终 IR、诊断、版本兼容选项实验；C 扩展/严格模式、Cortex-M3/RV32/wasm32 执行、Xtensa 交叉编译 |
 | [ci-reference.zip](ci-reference.zip) | GitHub Actions 原生/版本/目标参考程序的原始结果 |
-| [llgo.zip](llgo.zip) | 本地与 CI 的实际生成源码、测试日志、逐用例退出码；Linux 生成 Windows-target 绑定的 provenance |
+| [llgo.zip](llgo.zip) | 本地与 CI 的实际生成源码、测试日志、逐用例退出码；Linux 生成 Windows-target 绑定的 provenance；ownership/ownership-proposal 为手动表示对照及原始非零退出码 |
 | [libclang.zip](libclang.zip) | 固定生成器加载不同 libclang：18～20 的缺符号启动失败；21～23 的输出哈希与日志 |
 | [proposal-ssa.zip](proposal-ssa.zip) | padding 草案失败断言、PR #761 的原生对比、gc/自定义/patch 三种 SSA 输出、运行时泛型一致性以及 main/草案编译崩溃对照 |
 | [archives.json](archives.json) | 每个压缩包的 SHA-256、文件数与字节数 |

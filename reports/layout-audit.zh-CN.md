@@ -310,6 +310,28 @@ SSA 本身不解析 LLGo 布局指令，不持有可用于事后重算全部 uns
 
 对于完整 C++ 类，优先选择 opaque handle + C++ wrapper 的可验证路线。确实需要直接内存映射的类型应经过白名单式能力判定与 native oracle；不要把所有 record 自动当作可安全复制的普通 Go struct。
 
+### 4. 修复归属：编译器问题与生成器问题需要分别隔离
+
+归属不能仅按“布局错误”或“ABI 错误”的名称判断。先看生成表示是否准确传递了原生类型信息，再检查 LLGo 对该表示的存储、查询、反射和调用是否一致。某个原生语义没有可表达的 LLGo 契约时，编译器能力建设与生成器接入分别跟踪；wrapper 或明确拒绝也是生成器可以采用的边界，不代表必须先修改 LLVM。
+
+新增 [ownership_controls.py](../scripts/ownership_controls.py) 对两份真实生成快照做最小手动修改，再运行原来的原生 oracle 和 Go 断言。以下补测仅在 macOS arm64、LLVM 22 上执行，不替代七平台生成器矩阵：
+
+| 控制修改 | 固定 main | 布局草案 | 归属结论 |
+|---|---|---|---|
+| 仅给 CallbackBits 增加 `//llgo:cdecl` | struct size/offset 正确，但 callback Sizeof=16（C=8）、reflect struct size=24（C=16） | 全部断言 PASS | llcppg 缺标记；LLGo 还存在独立查询/元数据问题，关联 #2796、#2873 和 PR #2937 |
+| union 存储改为 `[2]float32`，加 `[0]uint64` 保持 alignment=8 | size/align 与真实传参全部 PASS | 全部 PASS | 本例是 llcppg 丢失浮点分类，不能仅凭失败就指认为 LLGo HFA lowering 错误 |
+
+第二项只是这个具体 union 的诊断表示，不是所有 ABI 上通用的 union 实现。Windows x86 的 union align 4/8 差异尚未完成同样的 native 标记与物理存储对照，暂不强行归责。
+
+需要 LLGo 跟踪的部分：
+
+- 无布局指令的嵌入结构触发 Linux amd64 编译崩溃，main 与草案均复现。
+- 已有 native 声明仍出现 unsafe/go-types、反射和物理布局不一致；优先关联现有 #2796、#2873、#2872，不重复建同类 bug。本次补测没有执行 reflect.Call，不能将其写成对 #2872 的新运行复现。
+- packed 的编译器支持由 PR #2937 跟踪；显式提高 record 对齐、overlap/base-subobject 描述需要额外契约。`pack N` 只是降低字段对齐上限，不能表达 `alignas(N)`。
+- 如果选择直接传递非平凡 C++ 值或通用原生 union，需要讨论导入 Clang ABI 信息的编译器接口；这是条件性的能力提案，不能称为 LLGo 已拿到正确 C++ 元数据却错误处理。生成器也可以选择 C++ wrapper 或明确拒绝不支持的直接调用。
+
+llcppg 负责生成错误、指令接入和不支持类型的诊断：位字段组合/typedef bool、callback 属性、union carrier、协变返回槽、基类 flatten、模板特化/concept、符号装饰与 host/target 配置。packed、过度对齐、非平凡值等需要编译器能力时，生成器条目链接对应依赖，避免两个仓库重复记录同一个修复目标。
+
 ## 六、较新语言规范的后续建议
 
 这部分优先级低于已复现的基础对象模型问题。

@@ -5,7 +5,7 @@ ROOT=pathlib.Path(__file__).resolve().parents[1];RESULTS=ROOT/'results';OUT=ROOT
 groups={
  'local-reference': ['clang18','clang19','clang20','clang21','clang22','clang23','clangapple21','clang23-compat22','local-native','embedded','xtensa-esp32','c-native',*['extra'+str(v) for v in range(18,24)]],
  'ci-reference':['ci-reference-latest'],
- 'llgo':['llgo-final','ci-llgo-latest'],
+ 'llgo':['llgo-final','ci-llgo-latest','ownership','ownership-proposal'],
  'libclang':['libclang-versions','cross-mangling'],
  'proposal-ssa':['ci-proposals','ci-proposals-first','ci-proposals-latest','ci-isolate','ci-isolate-comparison','proposals-local','padding-gc.log','padding-final.log','pr761-layout.log','ssa-custom.log','ssa-gc.log','ssa-patched-llgo.log','ssa-patched-gc.log','ssa-layout-final.log','ssa-layout-gc.log'],
 }
