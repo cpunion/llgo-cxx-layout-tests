@@ -1,0 +1,62 @@
+name: Generated LLGo compatibility probes
+on:
+  push:
+    paths: ['cases/**', 'scripts/llgo_cases.py', 'cmd/**', 'go.*', '.github/workflows/llgo.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, target: x86_64-unknown-linux-gnu}
+          - {os: ubuntu-24.04-arm, target: aarch64-unknown-linux-gnu}
+          - {os: macos-latest, target: arm64-apple-darwin}
+          - {os: macos-15-intel, target: x86_64-apple-darwin}
+          - {os: windows-2022, target: x86_64-pc-windows-msvc, arch: amd64, host: x64}
+          - {os: windows-2022, target: i686-pc-windows-msvc, arch: '386', host: x64}
+          - {os: windows-11-arm, target: aarch64-pc-windows-msvc, arch: arm64, host: arm64}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: xgo-dev/llgo
+          ref: b2e1d4e84fcccdc893b77a652c2f5c9b2fc65836
+      - uses: actions/checkout@v4
+        with:
+          path: audit
+      - uses: ./.github/actions/setup-deps
+        with:
+          llvm-version: '22'
+          windows-arch: ${{ matrix.arch || 'amd64' }}
+          windows-abi: msvc
+          windows-msvc-dependencies: runtime
+      - uses: ./.github/actions/setup-go
+        with:
+          architecture: ${{ matrix.host || '' }}
+      - name: Build pinned LLGo and generator for the host
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/audit-bin"
+          go build -o "$RUNNER_TEMP/audit-bin/llgo${{ runner.os == 'Windows' && '.exe' || '' }}" ./cmd/llgo
+          echo "$RUNNER_TEMP/audit-bin" >> "$GITHUB_PATH"
+          echo "LLGO_ROOT=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          export LLGO_ROOT="$GITHUB_WORKSPACE"
+          cd audit
+          "$RUNNER_TEMP/audit-bin/llgo" build -o bin/generate${{ runner.os == 'Windows' && '.exe' || '' }} ./cmd/generate
+      - uses: ./.github/actions/activate-windows-target
+        if: runner.os == 'Windows'
+        with:
+          windows-abi: msvc
+          windows-arch: ${{ matrix.arch }}
+      - name: Regenerate and execute compatibility assertions
+        shell: bash
+        working-directory: audit
+        run: python3 scripts/llgo_cases.py --target ${{ matrix.target }} --generator bin/generate${{ runner.os == 'Windows' && '.exe' || '' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: llgo-${{ matrix.target }}
+          path: audit/results/

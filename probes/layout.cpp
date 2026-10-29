@@ -99,7 +99,7 @@ extern "C" Trivial call_trivial(Trivial x) { return x; }
 extern "C" Nontrivial call_nontrivial(Nontrivial x) { return x; }
 extern "C" TrivialABI call_trivial_abi(TrivialABI x) { return x; }
 #ifdef AUDIT_NATIVE
-extern "C" int printf(const char*, ...);
+#include <stdio.h>
 template<class T, class U> long long delta(T *p, U *q) { return (char*)p - (char*)q; }
 int main() {
  printf("{\"facts\":[");
