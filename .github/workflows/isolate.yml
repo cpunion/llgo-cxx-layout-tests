@@ -1,0 +1,41 @@
+name: Isolate SysV amd64 packed code generation
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: xgo-dev/llgo
+          ref: b2e1d4e84fcccdc893b77a652c2f5c9b2fc65836
+      - uses: actions/checkout@v4
+        with:
+          repository: cpunion/llgo
+          ref: 2ed55ca77532f91e145f407a3528c8051a27c362
+          path: layout-source
+      - uses: actions/checkout@v4
+        with:
+          path: audit
+      - uses: ./.github/actions/setup-deps
+        with:
+          llvm-version: '22'
+      - uses: ./.github/actions/setup-go
+      - name: Build pinned proposal compiler
+        shell: bash
+        working-directory: layout-source
+        run: |
+          mkdir -p "$RUNNER_TEMP/layout-bin"
+          go build -o "$RUNNER_TEMP/layout-bin/llgo" ./cmd/llgo
+          echo "$RUNNER_TEMP/layout-bin" >> "$GITHUB_PATH"
+          echo "LLGO_ROOT=$GITHUB_WORKSPACE/layout-source" >> "$GITHUB_ENV"
+      - name: Isolate the failing compilation
+        working-directory: audit
+        run: python3 scripts/isolate_codegen.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codegen-isolation
+          path: audit/results/

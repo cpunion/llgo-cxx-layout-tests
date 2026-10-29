@@ -100,7 +100,7 @@ C++ 源代码在 [probes/layout.cpp](../probes/layout.cpp)；提案映射的 Go 
 | M13 | 普通非虚继承也有尾部 padding 复用：C derived size 8、d@5；Go 12、d@8 | [nonvirtual_tail](../cases/nonvirtual_tail) | 将完整 Base 嵌入 Derived |
 | M14 | 非平凡析构类型 `{int value; ~T();}` 按值实参应使用对象地址，Go 生成普通整数字段 aggregate；原生接收方观察到地址数值恰为 payload 37 | [nontrivial_value](../cases/nontrivial_value) | C++ 对象属性没有进入调用 ABI |
 
-M14 的原生函数只返回 `&argument` 的数值，不解引用错误地址，避免把崩溃作为唯一证据。M6 与 M14 说明：即使修复所有 Sizeof/Alignof/Offsetof，仍然不能自动修复调用 ABI。[Itanium 调用约定](https://itanium-cxx-abi.github.io/cxx-abi/abi.html#non-trivial)。
+`extern "C"` 并不会把 C++ 非平凡类变成普通 C record；对象参数是否间接传递仍取决于目标 ABI 的 C++ 规则。M14 的原生函数只返回 `&argument` 的数值，不解引用错误地址，避免把崩溃作为唯一证据。M6 与 M14 说明：即使修复所有 Sizeof/Alignof/Offsetof，仍然不能自动修复调用 ABI。[Itanium 调用约定](https://itanium-cxx-abi.github.io/cxx-abi/abi.html#non-trivial)。
 
 实现链接固定到审计提交：[class.go](https://github.com/goplus/llcppg/blob/d5f2252953e3a89004821afae4de9e2ff947607e/cl/class.go)、[bitfield.go](https://github.com/goplus/llcppg/blob/d5f2252953e3a89004821afae4de9e2ff947607e/cl/bitfield.go)、[union.go](https://github.com/goplus/llcppg/blob/d5f2252953e3a89004821afae4de9e2ff947607e/cl/union.go)、[vtable.go](https://github.com/goplus/llcppg/blob/d5f2252953e3a89004821afae4de9e2ff947607e/cl/vtable.go)。
 
@@ -108,7 +108,7 @@ M14 的原生函数只返回 `&argument` 的数值，不解引用错误地址，
 
 这 20 个 main 探针在 Linux amd64/arm64、macOS amd64/arm64 的原生 CI 中均完成：1 个正向控制 PASS，19 个 XFAIL（包括上述错误和后文的支持缺口）。这四组结果没有未分类 ERROR。
 
-Windows amd64 的同一批用例得到 1 PASS、16 XFAIL、3 XPASS：`nontrivial_value`、`nonvirtual_tail`、`union_hfa` 在该 MSVC ABI 下没有复现相同错误。XPASS 只表示这个具体断言通过，不代表已验证全部生命周期规则。
+Windows ARM64 的同批用例为 1 PASS、17 XFAIL、2 XPASS（非平凡传参和非虚基类尾部复用）；HFA union 在 Windows ARM64 仍失败。Windows amd64 的同一批用例得到 1 PASS、16 XFAIL、3 XPASS：`nontrivial_value`、`nonvirtual_tail`、`union_hfa` 在该 MSVC ABI 下没有复现相同错误。XPASS 只表示这个具体断言通过，不代表已验证全部生命周期规则。
 
 Windows x86 又实际暴露三个不同失败模式，不能硬套 64 位用例的解释：
 
@@ -278,6 +278,10 @@ SSA 本身不解析 LLGo 布局指令，不持有可用于事后重算全部 uns
 | P2 | 成员指针与扩展原生类型 | 各 ABI 表示、null 编码、转换/调用；不能转换的类型使用 opaque handle + wrapper |
 
 布局描述应优先成为编译器、go/types patch、反射和生成器共同消费的元数据。共享纯布局实现、代码生成一致性检查和 LLVM/native oracle 三者互补：源码一致性只能防止实现漂移，不能证明规则本身正确。
+
+新增重叠布局时，还需验证赋值是否会写入别的子对象正在复用的尾部 padding；不能默认按完整 `sizeof(Base)` 做 memcpy 就等同于 C++ 的基类赋值。字节 carrier 的 Go equality/hash 也不自动等于 C++ 的语义比较。这些是扩展重叠支持时的验收要求，本次未把它们写成已实现路径上的独立运行错误。
+
+布局草案已对普通 packed Go 存储中的未对齐 managed reference 做限制；native 存储指向 Go 对象时仍需要独立保活。未来的 overlap、union active member 和对象生命周期描述也必须与 GC 扫描、复制、反射规则一起设计。
 
 `go/types` 标准补丁不能反向依赖整个 llgo 编译器包；可维护纯 Go 的共享模型/生成适配层。遇到完整 C++ 语义时由 Clang 提供描述或包装，不应在运行时库中再实现一份 C++ ABI。
 
