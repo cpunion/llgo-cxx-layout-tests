@@ -1,0 +1,47 @@
+name: LLGo layout regression validation
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'cpunion/llgo commit or branch containing the layout tests'
+        required: true
+        default: codex/type-layout-ir-tests-20261030
+permissions:
+  contents: read
+jobs:
+  layout:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-2022]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: cpunion/llgo
+          ref: ${{ inputs.ref }}
+      - uses: ./.github/actions/setup-deps
+        with:
+          llvm-version: '22'
+          windows-abi: msvc
+          windows-msvc-dependencies: runtime
+      - uses: ./.github/actions/setup-go
+      - name: Check Go, cgo and native C LLVM layouts
+        shell: bash
+        env:
+          LLGO_ROOT: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          go test -count=1 -v ./ssa ./internal/build \
+            -run '^(TestGoBasicTypeLLVMStorage|TestCTypeLLVMLayout|TestCgoTypesLLVMLayout|TestCgoCompilerLayoutMismatch|TestCgoGCCAndLLGoClangLayout|TestCgoPackageLLVMLayout|TestRuntimeCTypeLLVMLayout)$' \
+            2>&1 | tee "$RUNNER_TEMP/layout-tests.log"
+          (cd runtime && go test -count=1 -v ./internal/clite) \
+            2>&1 | tee "$RUNNER_TEMP/clite-tests.log"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: layout-${{ matrix.os }}
+          path: |
+            ${{ runner.temp }}/layout-tests.log
+            ${{ runner.temp }}/clite-tests.log
