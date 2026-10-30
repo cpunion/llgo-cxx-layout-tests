@@ -1,0 +1,100 @@
+name: Go type size audit
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, name: linux-amd64}
+          - {os: ubuntu-24.04-arm, name: linux-arm64}
+          - {os: macos-latest, name: darwin-arm64}
+          - {os: macos-15-intel, name: darwin-amd64}
+          - {os: windows-2022, name: windows-amd64, arch: amd64, host: x64}
+          - {os: windows-2022, name: windows-386, arch: '386', host: x64}
+          - {os: windows-11-arm, name: windows-arm64, arch: arm64, host: arm64}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: xgo-dev/llgo
+          ref: b2e1d4e84fcccdc893b77a652c2f5c9b2fc65836
+      - uses: actions/checkout@v4
+        with:
+          path: audit
+      - uses: ./.github/actions/setup-deps
+        with:
+          llvm-version: '22'
+          windows-arch: ${{ matrix.arch || 'amd64' }}
+          windows-abi: msvc
+          windows-msvc-dependencies: runtime
+      - uses: ./.github/actions/setup-go
+        with:
+          architecture: ${{ matrix.host || '' }}
+      - name: Build LLGo host
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/size-bin"
+          go build -o "$RUNNER_TEMP/size-bin/llgo${{ runner.os == 'Windows' && '.exe' || '' }}" ./cmd/llgo
+          echo "$RUNNER_TEMP/size-bin" >> "$GITHUB_PATH"
+          echo "LLGO_ROOT=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+      - uses: ./.github/actions/activate-windows-target
+        if: runner.os == 'Windows'
+        with:
+          windows-abi: msvc
+          windows-arch: ${{ matrix.arch }}
+      - name: Record assertions and failures
+        shell: bash
+        working-directory: audit
+        run: python3 scripts/go_sizes.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-sizes-${{ matrix.name }}
+          path: audit/results/go-sizes
+  wasm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: xgo-dev/llgo
+          ref: b2e1d4e84fcccdc893b77a652c2f5c9b2fc65836
+      - uses: actions/checkout@v4
+        with:
+          path: audit
+      - uses: ./.github/actions/setup-deps
+        with:
+          llvm-version: '22'
+      - uses: ./.github/actions/setup-go
+      - uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: '6.0.8'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - uses: ./.github/actions/setup-binaryen
+      - uses: bytecodealliance/actions/wasmtime/setup@v1
+      - name: Install WASI runner
+        run: bash dev/install_wasmer.sh
+      - name: Build LLGo host
+        run: |
+          mkdir -p "$RUNNER_TEMP/size-bin"
+          go build -o "$RUNNER_TEMP/size-bin/llgo" ./cmd/llgo
+          echo "$RUNNER_TEMP/size-bin" >> "$GITHUB_PATH"
+          echo "LLGO_ROOT=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+      - name: Record wasm assertions and failures
+        working-directory: audit
+        run: |
+          for profile in gojs emscripten emscripten-memory64 wasi; do
+            python3 scripts/go_sizes.py --profile "$profile" --out "results/go-sizes/$profile"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-sizes-wasm
+          path: audit/results/go-sizes
