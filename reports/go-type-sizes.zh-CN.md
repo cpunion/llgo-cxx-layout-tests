@@ -32,7 +32,9 @@
 
 **CI 入口还有额外缺口**：`llgo.yml` 通过 `LLGO_TEST_SUITE=core` 调用 `dev/test_go_version.sh`，后者白名单排除了 `test/std/unsafe`、`test/std/go/types`。宿主 `go.yml` 的 `go test` 会跑这些包，但那是在测试 gc。wasm CI 有专门 profile/SSA/SIMD 检查，也未发现把全部基本类型的上述测试逐项运行的入口。本轮才在审计工作流中显式执行了旧 unsafe 测试和新的完整矩阵。
 
-要形成 LLGo 持续保障，应将共享的基本类型断言加入 `test/go`，将 IR 映射测试加入 `ssa`，再让原生 CI 与 wasm profile CI 明确执行它们；本研究仓库尚未向 LLGo 提交该集成。
+新增贡献 [LLGo PR #2945](https://github.com/xgo-dev/llgo/pull/2945) 将不依赖 `unsafe.Sizeof` 的断言加入 `ssa` 和 `internal/build`，由现有 compiler CI 执行。它覆盖 Go → LLVM、真实 cgo 预处理 → LLVM、C oracle 与 runtime C 别名，并以 GCC/Clang 对照及 `-fshort-enums` 反例检查编译器配置差异。PR 尚未合并，因此不能将这些检查算作 main 已有保障。验证日志见[独立 CI](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40985888357)。
+
+新测试还检出 Windows amd64/arm64 的 `runtime/internal/clite.SsizeT = Long` 只占 4 字节；同一 PR 修正为 Windows 指针宽度的有符号类型。该修复不改变本报告固定 main 版本的结果。Windows LLVM 缺少的扩展后端会明确跳过，核心 hosted 架构必须通过。
 
 ## 结果表
 
