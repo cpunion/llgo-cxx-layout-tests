@@ -34,7 +34,7 @@
 
 新增贡献 [LLGo PR #2945](https://github.com/xgo-dev/llgo/pull/2945) 将不依赖 `unsafe.Sizeof` 的断言加入 `ssa` 和 `internal/build`，由现有 compiler CI 执行。它覆盖 Go → LLVM、真实 cgo 预处理 → LLVM、C oracle 与 runtime C 别名，并以 GCC/Clang 对照及 `-fshort-enums` 反例检查编译器配置差异。PR 尚未合并，因此不能将这些检查算作 main 已有保障。验证日志见[独立 CI](https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40985888357)。
 
-新测试还检出 Windows amd64/arm64 的 `runtime/internal/clite.SsizeT = Long` 只占 4 字节；同一 PR 修正为 Windows 指针宽度的有符号类型。该修复不改变本报告固定 main 版本的结果。Windows LLVM 缺少的扩展后端会明确跳过，核心 hosted 架构必须通过。
+新测试还检出 Windows amd64/arm64 的 `runtime/internal/clite.SsizeT = Long` 只占 4 字节；同一 PR 修正为 Windows 指针宽度的有符号类型。该修复不改变本报告固定 main 版本的结果。Windows LLVM 缺少的扩展后端会明确跳过，核心 hosted 架构必须通过。 四个宿主的专项 CI 均已通过：Linux amd64/arm64 与 macOS arm64 完成 21 个目标，Windows 完成 13 个可用目标并明确跳过 8 个未安装后端。两个 Linux 宿主的 GCC/Clang 对照实际执行通过。原始日志保存在 [pr2945-layout.zip](../evidence/pr2945-layout.zip)，首次 Windows 缺后端失败也保留。
 
 ## 结果表
 

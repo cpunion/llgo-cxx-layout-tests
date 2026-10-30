@@ -1,0 +1,6 @@
+{
+  "sha256": "7ffd292355ff37fe37c20b36f1db4574f0455066a3b69d0546c467e2b54714a0",
+  "bytes": 20631,
+  "url": "https://github.com/cpunion/llgo-cxx-layout-tests/actions/runs/40985888357",
+  "note": "Linux/macOS passed attempt 1; Windows passed attempt 2 after the optional-backend guard. Original Windows failure preserved."
+}
