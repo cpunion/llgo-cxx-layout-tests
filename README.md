@@ -3,6 +3,7 @@
 公开研究仓库，包含原生参考代码、真实 llcppg 生成、LLGo 失败断言、跨平台/编译器版本矩阵与中文调研报告。
 
 - **[完整调研报告](reports/layout-audit.zh-CN.md)**：提案/实现不准确部分、不完整部分、建议；较新语言规范放在最后。
+- **[Go 基本类型 size 与 LLVM IR 验证](reports/go-type-sizes.zh-CN.md)**：19 项基本类型、原生/wasm 运行矩阵、21 个 target 的 LLVM 类型和实际分配大小，以及反射/零大小尾字段的不一致。
 - **[证据索引与覆盖矩阵](evidence/README.md)**：区分原生执行、模拟器执行、仅交叉编译和未覆盖项。
 - 修复跟踪：[LLGo #2943](https://github.com/xgo-dev/llgo/issues/2943)、[llcppg #1123](https://github.com/goplus/llcppg/issues/1123)。
 - [固定版本](pins.json)、[当前生成器探针](cases)、[padding/pack 与 PR #761 探针](proposals)、[SSA 实验](experiments/ssa)。

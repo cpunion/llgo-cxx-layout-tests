@@ -13,6 +13,7 @@
 | [libclang.zip](libclang.zip) | 固定生成器加载不同 libclang：18～20 的缺符号启动失败；21～23 的输出哈希与日志 |
 | [proposal-ssa.zip](proposal-ssa.zip) | padding 草案失败断言、PR #761 的原生对比、gc/自定义/patch 三种 SSA 输出、运行时泛型一致性以及 main/草案编译崩溃对照 |
 | [archives.json](archives.json) | 每个压缩包的 SHA-256、文件数与字节数 |
+| [go-sizes.zip](go-sizes.zip) | Go/LLGo 运行日志、21 个 target 的实际 LLVM IR 和 TargetData JSON；见 [专门报告](../reports/go-type-sizes.zh-CN.md)，哈希见 [go-sizes-archive.json](go-sizes-archive.json) |
 
 执行来源：
 
